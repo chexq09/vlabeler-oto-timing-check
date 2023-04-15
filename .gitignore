@@ -1,0 +1,8 @@
+.idea
+.vscode
+venv
+__pycache__
+test_data
+build
+dist
+*.spec
