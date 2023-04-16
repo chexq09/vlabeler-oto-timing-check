@@ -3,8 +3,8 @@ import os
 import wave
 import struct
 import argparse
-from typing import Tuple, List
 from collections import namedtuple
+from typing import Tuple, List, Union
 
 
 WavInfo = namedtuple('WavInfo', ['num_channels', 'sample_width', 'frame_rate', 'num_frames'])
@@ -20,7 +20,7 @@ SAMPLE_WIDTH_DICT = {
 
 def read_wav_file(input_file: str,
                   start: float=None,
-                  end: float=None) -> Tuple[list, WavInfo]:
+                  end: float=None) -> Tuple[List[List[float]], WavInfo]:
     """Load a WAV file.
 
     Args:
@@ -35,7 +35,7 @@ def read_wav_file(input_file: str,
             or there are no frame between start and end.
 
     Returns:
-        Tuple[list, WavInfo]: The WAV data and the information.
+        Tuple[List[List[float]], WavInfo]: The WAV data and the information.
             The WAV data is a 2D list, the first dimension is the channel and the second is the data.
             The data will always be normalized to [-1, 1].
     """
@@ -45,58 +45,151 @@ def read_wav_file(input_file: str,
         sample_width = input_wav.getsampwidth()
         frame_rate = input_wav.getframerate()
         num_frames = input_wav.getnframes()
+
         # get the start and end position
         start = 0 if start is None else round(start / 1000 * frame_rate)
         end = num_frames if end is None else round(end / 1000 * frame_rate)
         if start >= end:
             raise ValueError('No frame between start and end.')
+
         # seek the file and read frames
         input_wav.setpos(start)
         bytes_data = input_wav.readframes(end - start)
         num_frames = end - start
+
     # get information from sample_width
     prop = SAMPLE_WIDTH_DICT.get(sample_width)
     if prop is None:
         raise ValueError('Unsupported sample width: {}'.format(sample_width))
+
     # decode and to float
     length = num_channels * num_frames
     data = [(float(x) + prop.offset) / prop.norm_base
             for x in struct.unpack('<%d' % length + prop.format_str, bytes_data)]
+            
     # split to different channels
     data = [[data[j * num_channels + i] for j in range(num_frames)] for i in range(num_channels)]
     return data, WavInfo(num_channels, sample_width, frame_rate, num_frames)
 
 
-def merge_metronome_wav(voice_data: List[List],
+def _merge_single_channle(voice_data: List[float],
+                          metronome_data: List[float],
+                          metronome_weight: float,
+                          merge_idx_list: List[int],
+                          alignment: Union[int, str]=0) -> List[float]:
+    """Merge single channel.
+
+    Args:
+        voice_data (List[float]): The voice data.
+        metronome_data (List[float]): The metronome data.
+        metronome_weight (float): The weight of the metronome in (0, 1).
+        merge_idx_list (List[int]): Index list of the voice data.
+            Metronome will be merged to each index.
+        alignment (Union[int, str], optional): The aligment of the metronome data.
+            metronome_data[alignment] will be merged at index in merge_idx_list.
+            Defaults to 0.
+
+    Raises:
+        NotImplementedError: The alignment is not implemented.
+
+    Returns:
+        List[float]: Merged data.
+    """
+    # get alignment index
+    if alignment == 'center':
+        alignment = len(metronome_data) // 2
+    elif not isinstance(alignment, int):
+        raise NotImplementedError(alignment)
+
+    # apply weight
+    voice_weight = 1.0 - metronome_weight
+    merge_data = [x * voice_weight for x in voice_data]
+    weighted_data = [x * metronome_weight for x in metronome_data]
+
+    # merge
+    for merge_idx in merge_idx_list:
+        voice_start = merge_idx - alignment
+        voice_end = voice_start + len(metronome_data)
+        metronome_start = 0
+
+        # move to inside
+        if voice_start < 0:
+            metronome_start = -voice_start
+            voice_start = 0
+        if voice_end > len(merge_data):
+            voice_end = len(merge_data)
+
+        # check position
+        if voice_end <= voice_start:
+            continue
+
+        # merge
+        for i in range(voice_start, voice_end):
+            j = metronome_start + i - voice_start
+            merge_data[i] = merge_data[i] + weighted_data[j]
+            merge_data[i] = min(max(merge_data[i], -1.0), 1.0)
+
+    return merge_data
+
+
+def merge_metronome_wav(voice_data: List[List[float]],
                         voice_info: WavInfo,
-                        metronome_data: List[List],
+                        metronome_data: List[List[float]],
                         metronome_info: WavInfo,
                         metronome_count: int,
                         metronome_bpm: float,
                         metronome_weight: float,
-                        metronome_end_pos: float) -> List[List]:
+                        metronome_end_pos: float) -> List[List[float]]:
+    """Merge metronome to voice.
+
+    Args:
+        voice_data (List[List[float]]): The voice data.
+        voice_info (WavInfo): The WAV data of voice data.
+        metronome_data (List[List[float]]): The metronome data.
+        metronome_info (WavInfo): The WAV data of metronome data.
+        metronome_count (int): The count of all metronome clicks.
+        metronome_bpm (float): The BMP of metronome.
+        metronome_weight (float): The weight of the metronome in (0, 1).
+        metronome_end_pos (float): The position of the last metronome click.
+
+    Raises:
+        NotImplementedError: Difference frame rate of voice and metronome is unsupported.
+        NotImplementedError: Multi-channel metronome is unsupported.
+
+    Returns:
+        List[List[float]]: Merged data.
+    """
     # check args
     assert metronome_count >= 0, 'Metronome count is minus.'
     assert metronome_bpm > 0, 'BPM must more than 0.'
     assert 1 > metronome_weight > 0, 'Metronome weight must in (0, 1)'
     assert metronome_end_pos > 0, 'Metronome end position must > 0'
     if voice_info.frame_rate != metronome_info.frame_rate:
+        # TODO
         raise NotImplementedError('Difference frame rate of voice and metronome is unsupported.')
     if len(metronome_data) != 1:
         raise NotImplementedError('Multi-channel metronome is unsupported.')
+    metronome_data = metronome_data[0]
+
+    # calculate the position of the metronome
+    interval = 60000.0 / metronome_bpm  # milisecond
+    merge_pos_list = [metronome_end_pos - interval * float(i) for i in range(metronome_count)]
+    merge_idx_list = [round(x / 1000 * voice_info.frame_rate) for x in merge_pos_list]
+
     # merge
-    # TODO
-    return voice_data
+    merge_data = [_merge_single_channle(data, metronome_data, metronome_weight, merge_idx_list)
+                  for data in voice_data]
+    return merge_data
 
 
 def write_wav_file(output_file: str,
-                   data: List[List],
+                   data: List[List[float]],
                    wav_info: WavInfo) -> None:
     """Write a WAV file.
 
     Args:
         output_file (str): The output filename.
-        data (List[List]): The WAV data, same format as read_wav_file.
+        data (List[List[float]]): The WAV data, same format as read_wav_file.
         wav_info (WavInfo): The information of the WAV.
 
     Raises:
@@ -106,13 +199,17 @@ def write_wav_file(output_file: str,
     prop = SAMPLE_WIDTH_DICT.get(wav_info.sample_width)
     if prop is None:
         raise ValueError('Unsupported sample width: {}'.format(wav_info.sample_width))
+
     # different channels to 1 list
     length = wav_info.num_channels * wav_info.num_frames
     data = [data[i % wav_info.num_channels][i // wav_info.num_channels] for i in range(length)]
+
     # to int and encode
     data = [max(min(round(x * prop.norm_base - prop.offset), prop.max_value), prop.min_value)
             for x in data]
     bytes_data = struct.pack('<%d' % length + prop.format_str, *data)
+
+    # output
     with wave.open(output_file, 'wb') as output_wav:
         output_wav.setnchannels(wav_info.num_channels)
         output_wav.setsampwidth(wav_info.sample_width)
