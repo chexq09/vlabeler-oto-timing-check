@@ -72,25 +72,30 @@ def read_wav_file(input_file: str,
     return data, WavInfo(num_channels, sample_width, frame_rate, num_frames)
 
 
-def _merge_single_channle(voice_data: List[float],
+def _merge_single_channel(voice_data: List[float],
                           metronome_data: List[float],
                           metronome_weight: float,
                           merge_idx_list: List[int],
-                          alignment: Union[int, str]=0) -> List[float]:
+                          alignment: Union[int, str]=0,
+                          padding: Union[int, str]='auto') -> List[float]:
     """Merge single channel.
 
     Args:
         voice_data (List[float]): The voice data.
         metronome_data (List[float]): The metronome data.
         metronome_weight (float): The weight of the metronome in (0, 1).
-        merge_idx_list (List[int]): Index list of the voice data.
+        merge_idx_list (List[int]): Index list of the voice data before padding.
             Metronome will be merged to each index.
         alignment (Union[int, str], optional): The aligment of the metronome data.
             metronome_data[alignment] will be merged at index in merge_idx_list.
+            If 'center', align at the center of the metronome data.
             Defaults to 0.
+        padding (Union[int, str], optional): Pad on the left of the voice.
+            If 'auto', pad to the start of the first click.
+            Must >= 0, Defaults to 'auto'.
 
     Raises:
-        NotImplementedError: The alignment is not implemented.
+        NotImplementedError: The alignment or padding is not implemented.
 
     Returns:
         List[float]: Merged data.
@@ -105,6 +110,16 @@ def _merge_single_channle(voice_data: List[float],
     voice_weight = 1.0 - metronome_weight
     merge_data = [x * voice_weight for x in voice_data]
     weighted_data = [x * metronome_weight for x in metronome_data]
+
+    # padding
+    if padding == 'auto':
+        padding = max(0, -(min(merge_idx_list) - alignment))
+    elif not isinstance(padding, int):
+        raise NotImplementedError(padding)
+    assert padding >= 0, 'padding must >= 0'
+    if padding > 0:
+        merge_data = [0.0 for _ in range(padding)] + merge_data
+        merge_idx_list = [x + padding for x in merge_idx_list]
 
     # merge
     for merge_idx in merge_idx_list:
@@ -139,7 +154,7 @@ def merge_metronome_wav(voice_data: List[List[float]],
                         metronome_count: int,
                         metronome_bpm: float,
                         metronome_weight: float,
-                        metronome_end_pos: float) -> List[List[float]]:
+                        metronome_end_pos: float) -> Tuple[List[List[float]], WavInfo]:
     """Merge metronome to voice.
 
     Args:
@@ -157,7 +172,7 @@ def merge_metronome_wav(voice_data: List[List[float]],
         NotImplementedError: Multi-channel metronome is unsupported.
 
     Returns:
-        List[List[float]]: Merged data.
+        Tuple[List[List[float]], WavInfo]: Merged data and the new WAV data.
     """
     # check args
     assert metronome_count >= 0, 'Metronome count is minus.'
@@ -177,9 +192,17 @@ def merge_metronome_wav(voice_data: List[List[float]],
     merge_idx_list = [round(x / 1000 * voice_info.frame_rate) for x in merge_pos_list]
 
     # merge
-    merge_data = [_merge_single_channle(data, metronome_data, metronome_weight, merge_idx_list)
+    merge_data = [_merge_single_channel(data,
+                                        metronome_data,
+                                        metronome_weight,
+                                        merge_idx_list,
+                                        padding='auto')
                   for data in voice_data]
-    return merge_data
+    merge_info = WavInfo(voice_info.num_channels,
+                         voice_info.sample_width,
+                         voice_info.frame_rate,
+                         len(merge_data[0]))
+    return merge_data, merge_info
 
 
 def write_wav_file(output_file: str,
@@ -263,17 +286,17 @@ def main():
     metronome_data, metronome_info = read_wav_file(args.metronome_file)
 
     # process
-    merged_data = merge_metronome_wav(voice_data,
-                                      voice_info,
-                                      metronome_data,
-                                      metronome_info,
-                                      args.metronome_count + 1,
-                                      args.bpm,
-                                      args.metronome_weight,
-                                      -args.entry_offset)
+    merged_data, merge_info = merge_metronome_wav(voice_data,
+                                                  voice_info,
+                                                  metronome_data,
+                                                  metronome_info,
+                                                  args.metronome_count + 1,
+                                                  args.bpm,
+                                                  args.metronome_weight,
+                                                  -args.entry_offset)
 
     # write WAV file
-    write_wav_file(args.output_file, merged_data, voice_info)
+    write_wav_file(args.output_file, merged_data, merge_info)
 
 
 if __name__ == '__main__':
