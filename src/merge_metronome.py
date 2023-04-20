@@ -72,6 +72,34 @@ def read_wav_file(input_file: str,
     return data, WavInfo(num_channels, sample_width, frame_rate, num_frames)
 
 
+def _resample_single_channel(data: List[float],
+                             old_frame_rate: float,
+                             new_frame_rate: float) -> List[float]:
+    """Resample a single channel.
+
+    Args:
+        data (List[float]): The voice data.
+        old_frame_rate (float): The frame rate of data.
+        new_frame_rate (float): The new frame rate.
+
+    Returns:
+        List[float]: Resampled data.
+    """
+    new_length = int(round(len(data) / old_frame_rate * new_frame_rate))
+    new_data = []
+    for new_idx in range(new_length):
+        old_idx = new_idx / new_frame_rate * old_frame_rate
+        old_idx_int = int(old_idx)
+        if old_idx_int >= len(data) - 1:
+            new_data.append(data[-1])
+        else:
+            right_weight = old_idx - old_idx_int
+            left_weight = 1.0 - right_weight
+            new_sample = left_weight * data[old_idx_int] + right_weight * data[old_idx_int + 1]
+            new_data.append(new_sample)
+    return new_data
+
+
 def _merge_single_channel(voice_data: List[float],
                           metronome_data: List[float],
                           metronome_weight: float,
@@ -179,11 +207,19 @@ def merge_metronome_wav(voice_data: List[List[float]],
     assert metronome_bpm > 0, 'BPM must more than 0.'
     assert 1 > metronome_weight > 0, 'Metronome weight must in (0, 1)'
     assert metronome_end_pos > 0, 'Metronome end position must > 0'
-    if voice_info.frame_rate != metronome_info.frame_rate:
-        # TODO
-        raise NotImplementedError('Difference frame rate of voice and metronome is unsupported.')
     if len(metronome_data) != 1:
         raise NotImplementedError('Multi-channel metronome is unsupported.')
+
+    # resample metronome data
+    if voice_info.frame_rate != metronome_info.frame_rate:
+        metronome_data = [_resample_single_channel(data,
+                                                   metronome_info.frame_rate,
+                                                   voice_info.frame_rate)
+                          for data in metronome_data]
+        metronome_info = WavInfo(metronome_info.num_channels,
+                                 metronome_info.sample_width,
+                                 voice_info.frame_rate,
+                                 len(metronome_data[0]))
     metronome_data = metronome_data[0]
 
     # calculate the position of the metronome

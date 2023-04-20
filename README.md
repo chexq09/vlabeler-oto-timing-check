@@ -20,5 +20,5 @@ The sound is cut to only one click, and its volume becomes larger.
 
 ## TODO
 
-- [ ] Resample metronome.
+- [x] Resample metronome.
 - [ ] Plugin.
