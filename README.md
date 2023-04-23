@@ -7,19 +7,22 @@
 - Python >= 3.7 (to use PyInstaller)
 - PyInstaller
 
-Other libraries are not used to reduce the size of the package. 
+Other libraries are not used to reduce the size of the package.
+
+### As plugin
+
+vLabeler 1.0.0-beta4 or later.
+
+## Compile
 
 Compile by
+
 ```
 cd src
 pyinstaller -F --clean ./merge_metronome.py
 ```
 
 It is recommended to use a new venv for smaller executables.
-
-### As plugin
-
-vLabeler 1.0.0-beta4 or later.
 
 ## Metronome
 
