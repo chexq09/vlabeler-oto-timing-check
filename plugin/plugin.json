@@ -1,0 +1,92 @@
+{
+  "name": "oto-timing-check",
+  "version": 1,
+  "type": "macro",
+  "displayedName": {
+    "en": "Oto timing check",
+    "zh": "音声位置检查",
+    "ja": "TODO"
+  },
+  "author": "chexq09",
+  "email": "11609761+chexq09@users.noreply.github.com",
+  "description": {
+    "en": "TODO",
+    "zh": "TODO",
+    "ja": "TODO"
+  },
+  "website": "https://github.com/chexq09/vlabeler-oto-timing-check",
+  "supportedLabelFileExtension": "ini",
+  "parameters": {
+    "list": [
+      {
+        "type": "rawFile",
+        "name": "mergeExePath",
+        "label": {
+          "en": "Metronome Synthesis engine",
+          "zh": "节拍器合成引擎",
+          "ja": "メトロノーム合成エンジン"
+        },
+        "description": {
+          "en": "TODO",
+          "zh": "节拍器合成引擎（可执行文件）。",
+          "ja": "TODO"
+        },
+        "defaultValue": "merge_metronome.exe"
+      },
+      {
+        "type": "rawFile",
+        "name": "metronomePath",
+        "label": {
+          "en": "TODO",
+          "zh": "节拍器音频",
+          "ja": "TODO"
+        },
+        "description": {
+          "en": "TODO",
+          "zh": "节拍器音频（WAV文件）。",
+          "ja": "TODO"
+        },
+        "defaultValue": "metronome.wav"
+      },
+      {
+        "type": "integer",
+        "name": "metronomeCount",
+        "label": {
+          "en": "TODO",
+          "zh": "音声前节拍器音频循环次数",
+          "ja": "TODO"
+        },
+        "defaultValue": 3,
+        "min": 0,
+        "max": 10
+      },
+      {
+        "type": "float",
+        "name": "bmp",
+        "label": {
+          "en": "TODO",
+          "zh": "节拍器BMP",
+          "ja": "TODO"
+        },
+        "defaultValue": 120,
+        "min": 1,
+        "max": 1000
+      },
+      {
+        "type": "float",
+        "name": "metronomeWeight",
+        "label": {
+          "en": "TODO",
+          "zh": "节拍器音频权重",
+          "ja": "TODO"
+        },
+        "defaultValue": 0.5,
+        "min": 0.001,
+        "max": 0.999
+      }
+    ]
+  },
+  "scriptFiles": [
+    "oto-timing-check.js"
+  ]
+}

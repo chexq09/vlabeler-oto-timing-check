@@ -11,7 +11,7 @@ Other libraries are not used to reduce the size of the package.
 
 ### As plugin
 
-TODO
+vLabeler 1.0.0-beta4 or later.
 
 ## Metronome
 
@@ -21,4 +21,5 @@ The sound is cut to only one click, and its volume becomes larger.
 ## TODO
 
 - [x] Resample metronome.
-- [ ] Plugin.
+- [x] Plugin.
+- [ ] Description.

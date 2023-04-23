@@ -311,9 +311,9 @@ def main():
     assert args.bpm > 0, 'BPM must > 0'
     assert 1 > args.metronome_weight > 0, 'METRONOME_WEIGHT must in (0, 1)'
     assert os.path.exists(args.voice_file), 'METRONOME_FILE not found'
-    assert args.entry_start > 0, 'ENTRY_START must > 0'
+    assert args.entry_start >= 0, 'ENTRY_START must >= 0'
     assert args.entry_end > 0, 'ENTRY_END must > 0'
-    assert args.entry_offset < 0, 'ENTRY_OFFSET must > 0'
+    assert args.entry_offset <= 0, 'ENTRY_OFFSET must <= 0'
     assert args.metronome_file.lower().endswith('.wav') and args.voice_file.lower().endswith('.wav') \
         and args.output_file.lower().endswith('.wav'), 'input and output must by .WAV file'
 
