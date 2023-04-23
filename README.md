@@ -9,6 +9,14 @@
 
 Other libraries are not used to reduce the size of the package. 
 
+Compile by
+```
+cd src
+pyinstaller -F --clean ./merge_metronome.py
+```
+
+It is recommended to use a new venv for smaller executables.
+
 ### As plugin
 
 vLabeler 1.0.0-beta4 or later.
