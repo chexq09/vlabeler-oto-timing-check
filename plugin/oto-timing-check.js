@@ -42,8 +42,8 @@ if (!Env.isWindows()) {
 
 // check metronome file
 let metronomePath = params["metronomePath"]
-let mergeExeExtension = File.fromPath(metronomePath).getExtension()
-if (mergeExeExtension != "wav") {
+let metronomeExtension = File.fromPath(metronomePath).getExtension()
+if (metronomeExtension != "wav") {
     error({
         en: `The given metronome is not a WAV file: ${metronomePath}`,
         zh: `给定的节拍器音频不是WAV文件: ${metronomePath}`,
@@ -57,7 +57,7 @@ args.push(mergeExePath)
 // metronome options
 args.push(metronomePath)
 args.push(params["metronomeCount"].toString())
-args.push(params["bmp"].toString())
+args.push(params["bpm"].toString())
 args.push(params["metronomeWeight"].toString())
 
 // sample file
