@@ -31,7 +31,7 @@
           "zh": "本插件的程序位置（可执行文件），大部分情况下请勿修改。",
           "ja": "このプラグインの実行ファイルのパスです。ほとんどの場合、変更する必要はありません。"
         },
-        "defaultValue": "merge_metronome"
+        "defaultValue": "timing_check"
       },
       {
         "type": "rawFile",
