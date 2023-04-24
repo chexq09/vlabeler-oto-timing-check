@@ -1,0 +1,92 @@
+{
+  "name": "oto-timing-check",
+  "version": 1,
+  "type": "macro",
+  "displayedName": {
+    "en": "oto timing check",
+    "zh": "oto 节奏测试",
+    "ja": "oto タイミングチェック"
+  },
+  "author": "chexq09",
+  "email": "11609761+chexq09@users.noreply.github.com",
+  "description": {
+    "en": "Check correctness of utteracnce setting of an entry for UTAU oto, using metronome clicks.",
+    "zh": "使用节拍器音频检查 UTAU oto 条目的先行发声设置是否正确。",
+    "ja": "メトロノームにより、UTAU oto の先行発声の設定をチェックします。"
+  },
+  "website": "https://github.com/chexq09/vlabeler-oto-timing-check",
+  "supportedLabelFileExtension": "ini",
+  "parameters": {
+    "list": [
+      {
+        "type": "rawFile",
+        "name": "mergeExePath",
+        "label": {
+          "en": "Program path",
+          "zh": "程序位置",
+          "ja": "プログラムのパス"
+        },
+        "description": {
+          "en": "Path to the executable file of this plugin. In most cases, you should not change this.",
+          "zh": "本插件的程序位置（可执行文件），大部分情况下请勿修改。",
+          "ja": "このプラグインの実行ファイルのパスです。ほとんどの場合、変更する必要はありません。"
+        },
+        "defaultValue": "merge_metronome"
+      },
+      {
+        "type": "rawFile",
+        "name": "metronomePath",
+        "label": {
+          "en": "Metronome audio file",
+          "zh": "节拍器音频文件",
+          "ja": "メトロノームの音声ファイル"
+        },
+        "description": {
+          "en": "Audio file (.wav) of a single metronome click.",
+          "zh": "单次节拍器击打的音频文件（.wav）。",
+          "ja": "メトロノームクリックの音声ファイル（.wav）です。"
+        },
+        "defaultValue": "metronome.wav"
+      },
+      {
+        "type": "integer",
+        "name": "metronomeCount",
+        "label": {
+          "en": "Metronome prefix count",
+          "zh": "前置节拍器次数",
+          "ja": "先行メトロノームの回数"
+        },
+        "defaultValue": 3,
+        "min": 0,
+        "max": 10
+      },
+      {
+        "type": "float",
+        "name": "bpm",
+        "label": {
+          "en": "Tempo (BPM)",
+          "zh": "曲速（BPM）",
+          "ja": "テンポ（BPM）"
+        },
+        "defaultValue": 120,
+        "min": 60,
+        "max": 480
+      },
+      {
+        "type": "float",
+        "name": "metronomeWeight",
+        "label": {
+          "en": "Metronome volume weight",
+          "zh": "节拍器音量权重",
+          "ja": "メトロノームの音量の重み"
+        },
+        "defaultValue": 0.5,
+        "min": 0.001,
+        "max": 0.999
+      }
+    ]
+  },
+  "scriptFiles": [
+    "oto-timing-check.js"
+  ]
+}
