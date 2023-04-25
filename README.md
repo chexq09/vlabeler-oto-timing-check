@@ -19,7 +19,7 @@ Compile by
 
 ```
 cd src
-pyinstaller -F --clean ./merge_metronome.py
+pyinstaller -F --clean ./timing_check.py
 ```
 
 It is recommended to use a new venv for smaller executables.
