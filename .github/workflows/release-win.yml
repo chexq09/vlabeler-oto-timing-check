@@ -1,0 +1,44 @@
+name: Release Windows
+
+on:
+  push:
+    tags:
+      - "*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.7'
+      - name: Install pyinstaller
+        run: python -m pip install -U pyinstaller
+      - name: Build
+        run: |
+          cd src
+          pyinstaller -F --clean ./timing_check.py
+      - name: Copy files
+        run: |
+          mkdir oto-timing-check
+          cp ./plugin/oto-timing-check.js ./temp/
+          cp ./plugin/plugin.json ./temp/
+          cp ./src/dist/timing_check.exe ./temp/
+          cp ./resources/metronome.wav ./temp/
+      - name: Zip
+        run: |
+          $VERSION="${{ github.ref_name }}"
+          echo $VERSION
+          Compress-Archive ./oto-timing-check ./oto-timing-check-$VERSION-win64.zip
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          files: oto-timing-check-${{ github.ref_name }}-win64.zip
