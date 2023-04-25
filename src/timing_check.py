@@ -191,7 +191,7 @@ def merge_metronome_wav(voice_data: List[List[float]],
         metronome_data (List[List[float]]): The metronome data.
         metronome_info (WavInfo): The WAV data of metronome data.
         metronome_count (int): The count of all metronome clicks.
-        metronome_bpm (float): The BMP of metronome.
+        metronome_bpm (float): The BPM of metronome.
         metronome_weight (float): The weight of the metronome in (0, 1).
         metronome_end_pos (float): The position of the last metronome click.
 
