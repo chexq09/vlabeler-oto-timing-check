@@ -34,3 +34,4 @@ The sound is cut to only one click, and its volume becomes larger.
 - [x] Resample metronome.
 - [x] Plugin.
 - [x] Description.
+- [ ] Release.
