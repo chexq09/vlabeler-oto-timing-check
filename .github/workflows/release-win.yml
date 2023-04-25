@@ -30,10 +30,10 @@ jobs:
       - name: Copy files
         run: |
           mkdir oto-timing-check
-          cp ./plugin/oto-timing-check.js ./temp/
-          cp ./plugin/plugin.json ./temp/
-          cp ./src/dist/timing_check.exe ./temp/
-          cp ./resources/metronome.wav ./temp/
+          cp ./plugin/oto-timing-check.js ./oto-timing-check/
+          cp ./plugin/plugin.json ./oto-timing-check/
+          cp ./src/dist/timing_check.exe ./oto-timing-check/
+          cp ./resources/metronome.wav ./oto-timing-check/
       - name: Zip
         run: |
           $VERSION="${{ github.ref_name }}"
