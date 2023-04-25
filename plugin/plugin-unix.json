@@ -23,12 +23,12 @@
         "name": "mergeExePath",
         "label": {
           "en": "Program path",
-          "zh": "程序位置",
+          "zh": "程序路径",
           "ja": "プログラムのパス"
         },
         "description": {
           "en": "Path to the executable file of this plugin. In most cases, you should not change this.",
-          "zh": "本插件的程序位置（可执行文件），大部分情况下请勿修改。",
+          "zh": "本插件的程序路径（可执行文件），大部分情况下请勿修改。",
           "ja": "このプラグインの実行ファイルのパスです。ほとんどの場合、変更する必要はありません。"
         },
         "defaultValue": "timing_check"
