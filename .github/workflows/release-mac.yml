@@ -1,11 +1,9 @@
 name: Release Mac
 
-# on:
-#   push:
-#     tags:
-#       - "*"
-
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - "*"
 
 permissions:
   contents: write
