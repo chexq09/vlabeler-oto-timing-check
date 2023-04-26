@@ -36,9 +36,9 @@ jobs:
         run: |
           $VERSION="${{ github.ref_name }}"
           echo $VERSION
-          Compress-Archive ./oto-timing-check ./oto-timing-check-$VERSION-win64.zip
+          Compress-Archive ./oto-timing-check ./vlabeler-oto-timing-check-$VERSION-win64.zip
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           prerelease: true
-          files: oto-timing-check-${{ github.ref_name }}-win64.zip
+          files: vlabeler-oto-timing-check-${{ github.ref_name }}-win64.zip
