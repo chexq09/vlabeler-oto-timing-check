@@ -1,8 +1,8 @@
 # Oto Timing Check - vLabeler plugin
 
-## Requirement
-
 This is a batch edit plugin for vLabeler. It does similar things as setParam's Utterance Timing (F8), which checks the utterance setting by adding metronome clicks to the entry audio.
+
+## Requirement
 
 ### Compile
 
